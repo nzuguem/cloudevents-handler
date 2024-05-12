@@ -4,6 +4,58 @@
 
 This is an application component that enables the consumption (limited to displaying) and production of CloudEvents, based on the **[HTTP Protocol Binding v1 spec][cloudevents-http-spec]**.
 
+![](docs/images/cloudevents-handler.png)
+
+> ℹ️ By default, *cloudevents-handler* sends events in a vacuum (the ***Service*** is ignored). To specify a destination (*ready to receive CloudEvents in HTTP POST*), set the environment variable : `QUARKUS.REST_CLIENT_CLIENT_URL=<URL OF SERVICE>`
+
+## Prerequisites
+
+- [Task][taskfile-doc]
+- [SDKMan][sdkman-doc]
+- [Docker][docker-install-doc]
+
+## Launch Application
+
+Installing and configuring the correct version of the Java JDK :
+
+```bash
+sdk env install
+```
+
+```bash
+task dev-mode
+
+## Test Post CloudEvent in Structured Content Mode
+task post-event/structured-mode
+
+## Test Post CloudEvent in Binary Content Mode
+task post-event/structured-mode
+```
+
+## Build Native and Container Image
+
+### Native Image
+
+```bash
+## Build Native Image
+task build-app/native
+
+## Run it
+target/target/cloudevents-handler-unused-runner
+```
+
+### Container Image
+
+We use Java's own source-to-image tool : ***JIB***
+
+```bash
+## Build Container Image
+task build-app/with-container
+
+## Run Container Image
+docker run -i --rm -p 8080:8080 ghcr.io/nzuguem/cloudevents-handler
+```
+
 ## Resources
 
 - [CloudEvents Hands-On][cloudevents-hands-on]
@@ -17,3 +69,6 @@ This is an application component that enables the consumption (limited to displa
 [example-sdk-cloudevents-quarkus]: https://github.com/cloudevents/sdk-java/tree/main/examples/restful-ws-quarkus
 [cloudevents-sdk-java-doc]: https://cloudevents.github.io/sdk-java/
 [cloudevents-http-spec]: https://github.com/cloudevents/spec/blob/v1.0/http-protocol-binding.md
+[taskfile-doc]: https://taskfile.dev/
+[sdkman-doc]: https://sdkman.io/
+[docker-install-doc]: https://docs.docker.com/engine/install/

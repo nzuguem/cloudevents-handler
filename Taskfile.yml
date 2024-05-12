@@ -22,7 +22,7 @@ tasks:
           MAVEN_CLI_OPTS: >-
             -Pnative
           QUARKUS_OPTS: >-
-            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=target/native-image-build-output.json","-H:+BuildReport"
+            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=/tmp/native-image-build-output.json","-H:+BuildReport"
   
   build-app/with-container:
     desc: Build Application and Container Image.
@@ -33,12 +33,8 @@ tasks:
             -Pnative
           QUARKUS_OPS: >-
             -Dquarkus.container-image.build=true
-            -Dquarkus.native.container-build=true
             -Dquarkus.container-image.tag=latest
             -Dquarkus.container-image.builder=jib
-            -Dquarkus.jib.platforms=linux/amd64,linux/arm64
-            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=target/native-image-build-output.json","-H:+BuildReport"
-
   
   build-app/ci:
     desc: Build Application for Continuous Integration.
