@@ -1,0 +1,49 @@
+name: CloudEvents Handler
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: 🏗️ Build Application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: 21.0.3
+          distribution: graalvm
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: true
+          native-image-musl: true
+          cache: maven
+      
+      - name: Build Application  
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: ${{ github.ref_name }}
+        run: |
+          task build-app/ci
+    
+      - name: Scan Container Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: gcr.io/nzuguem/cloudevents-handler:${{ github.ref_name }} 
+          format: table
+          exit-code: '0'
+          ignore-unfixed: false
+          vuln-type: os,library
+
+      - name: Upload Build Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudevents-handler-html-build-report
+          path: target/**/*-build-report.html
+          retention-days: 30

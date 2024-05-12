@@ -1,0 +1,107 @@
+version: 3
+
+silent: true
+
+tasks:
+  default:
+    desc: Show available tasks.
+    cmd: task -l
+  
+  build-app:
+    desc: Build Application.
+    env:
+      MAVEN_CLI_OPTS: '{{.MAVEN_CLI_OPTS}}' # Variable valued when in CI (build-app/ci)
+      MAVEN_OPTS: '{{.MAVEN_OPTS}}' # Variable valued when in CI (build-app/ci)
+    cmd: ./mvnw $MAVEN_CLI_OPTS clean package {{.QUARKUS_OPS}}
+  
+  build-app/native:
+    desc: Build Application for Native.
+    cmds:
+      - task: build-app
+        vars:
+          MAVEN_CLI_OPTS: >-
+            -Pnative
+          QUARKUS_OPTS: >-
+            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=target/native-image-build-output.json","-H:+BuildReport"
+  
+  build-app/with-container:
+    desc: Build Application and Container Image.
+    cmds:
+      - task: build-app
+        vars:
+          MAVEN_CLI_OPTS: >-
+            -Pnative
+          QUARKUS_OPS: >-
+            -Dquarkus.container-image.build=true
+            -Dquarkus.native.container-build=true
+            -Dquarkus.container-image.tag=latest
+            -Dquarkus.container-image.builder=jib
+            -Dquarkus.jib.platforms=linux/amd64,linux/arm64
+            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=target/native-image-build-output.json","-H:+BuildReport"
+
+  
+  build-app/ci:
+    desc: Build Application for Continuous Integration.
+    cmds:
+      - task: build-app
+        vars:      
+          MAVEN_CLI_OPTS: >-
+            --no-transfer-progress 
+            --errors
+            --fail-at-end
+            --show-version 
+            --batch-mode
+            -Pnative
+          MAVEN_OPTS: >-
+            -Djansi.force=true
+            -Dstyle.color=always
+          QUARKUS_OPS: >-
+            -Dquarkus.container-image.build=true
+            -Dquarkus.container-image.tag=latest
+            -Dquarkus.container-image.additional-tags=$IMAGE_TAG
+            -Dquarkus.container-image.push=true
+            -Dquarkus.container-image.builder=jib
+            -Dquarkus.jib.platforms=linux/amd64,linux/arm64
+            -Dquarkus.container-image.username=nzuguem
+            -Dquarkus.container-image.password=$REGISTRY_PASSWORD
+            -Dquarkus.native.additional-build-args="--enable-sbom=cyclonedx","--static","--libc=musl","-H:BuildOutputJSONFile=/tmp/native-image-build-output.json","-H:+BuildReport"
+
+
+  
+  dev-mode:
+    desc: Run the app in dev mode.
+    env:
+      quarkus.rest-client.client.url: http://localhost:8089/client
+    cmd: ./mvnw quarkus:dev
+  
+  post-event:
+    internal: true
+    cmd: >-
+      curl -v http://localhost:8080
+      {{.HEADERS_SPEC}}
+      {{.DATA_SPEC}}
+  
+  post-event/binary-mode:
+    desc: Post CloudEvents in binary mode.
+    cmds:
+      - task: post-event
+        vars:
+          HEADERS_SPEC: >-
+            -H "ce-specversion: 1.0"
+            -H "ce-type: me.nzuguem.cloudevents.example"
+            -H "ce-source: /events/example"
+            -H "ce-id: 536808d3-88be-4077-9d7a-a3f162705f78"
+            -H "Content-Type: application/json"
+            -H "ce-subject: example.json"
+          DATA_SPEC: >-
+            -d @events/example.json
+  
+  post-event/structured-mode:
+    desc: Post CloudEvents in Strcutured mode.
+    cmds:
+      - task: post-event
+        vars:
+          HEADERS_SPEC: >-
+            -H "Content-Type: application/cloudevents+json"
+          DATA_SPEC: >-
+            -d @events/example-structured.json
