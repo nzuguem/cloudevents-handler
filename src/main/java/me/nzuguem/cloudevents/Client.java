@@ -30,7 +30,7 @@ public interface Client {
     Response executeStructured(CloudEvent event);
 
 
-    default void send(CloudEventData eventData, boolean isStructured) {
+    default CloudEvent send(CloudEventData eventData, boolean isStructured) {
 
         var event = CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
@@ -46,16 +46,19 @@ public interface Client {
         if (baseUri.contains("ignored")) {
 
             Log.infof("Sending CloudEvents Ignored: %s", event);
-
-            return;
-        }
-
-        if (isStructured) {
-
-            this.executeStructured(event);
-        } else {
             
-            this.executeBinary(event);
+            
+        } else {
+
+            if (isStructured) {
+
+                this.executeStructured(event);
+            } else {
+                
+                this.executeBinary(event);
+            }
         }
+
+        return event;
     }
 }

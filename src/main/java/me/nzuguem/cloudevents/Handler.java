@@ -16,9 +16,11 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/")
 @RunOnVirtualThread
@@ -38,7 +40,8 @@ public class Handler {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, JsonFormat.CONTENT_TYPE})
-    public void handle(CloudEvent event, @Context HttpHeaders httpHeaders, @RestHeader String contentType) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response handle(CloudEvent event, @Context HttpHeaders httpHeaders, @RestHeader String contentType) {
 
         Log.infof("Revcieve Event ID : %s", event.getId());
 
@@ -48,7 +51,9 @@ public class Handler {
 
         Log.infof("Revcieve Event : %s", event);
 
-        this.client.send(event.getData(), this.isStructured(contentType));
+        var eventReply = this.client.send(event.getData(), this.isStructured(contentType));
+
+        return Response.ok(eventReply).build();
 
     }
 
