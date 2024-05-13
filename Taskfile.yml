@@ -62,8 +62,6 @@ tasks:
             -Dquarkus.container-image.password=$REGISTRY_PASSWORD
             -Dquarkus.native.additional-build-args="--enable-sbom=cyclonedx","--static","--libc=musl","-H:BuildOutputJSONFile=/tmp/native-image-build-output.json","-H:+BuildReport"
 
-
-  
   dev-mode:
     desc: Run the app in dev mode.
     env:

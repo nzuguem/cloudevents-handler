@@ -23,11 +23,11 @@ public interface Client {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response executeBinary(CloudEvent event);
+    Response sendBinary(CloudEvent event);
 
     @POST
     @Consumes(JsonFormat.CONTENT_TYPE)
-    Response executeStructured(CloudEvent event);
+    Response sendStructured(CloudEvent event);
 
 
     default CloudEvent send(CloudEventData eventData, boolean isStructured) {
@@ -52,10 +52,10 @@ public interface Client {
 
             if (isStructured) {
 
-                this.executeStructured(event);
+                this.sendStructured(event);
             } else {
                 
-                this.executeBinary(event);
+                this.sendBinary(event);
             }
         }
 
