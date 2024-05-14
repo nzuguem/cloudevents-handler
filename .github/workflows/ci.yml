@@ -32,14 +32,22 @@ jobs:
         run: |
           task build-app/ci
     
-      - name: Scan Container Image
-        uses: aquasecurity/trivy-action@master
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
         with:
-          image-ref: ghcr.io/nzuguem/cloudevents-handler:${{ github.ref_name }} 
-          format: table
-          exit-code: '0'
-          ignore-unfixed: false
-          vuln-type: os,library
+          image: ghcr.io/nzuguem/cloudevents-handler:${{ github.ref_name }}
+          format: cyclonedx-json
+          artifact-name: cloudevents-handler-image-sbom-cyclonedx-json
+          output-file: cloudevents-handler-image-sbom-cyclonedx.json
+
+      - name: Scan Image from its SBOM
+        uses: anchore/scan-action@v3
+        with:
+          sbom: cloudevents-handler-image-sbom-cyclonedx.json
+          fail-build: false
+          by-cve: true
+          output-format: table
+          vex: true
 
       - name: Upload Build Report
         uses: actions/upload-artifact@v4

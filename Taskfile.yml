@@ -12,7 +12,7 @@ tasks:
     env:
       MAVEN_CLI_OPTS: '{{.MAVEN_CLI_OPTS}}' # Variable valued when in CI (build-app/ci)
       MAVEN_OPTS: '{{.MAVEN_OPTS}}' # Variable valued when in CI (build-app/ci)
-    cmd: ./mvnw $MAVEN_CLI_OPTS clean package {{.QUARKUS_OPS}}
+    cmd: ./mvnw $MAVEN_CLI_OPTS clean package {{.QUARKUS_OPTS}}
   
   build-app/native:
     desc: Build Application for Native.
@@ -22,16 +22,14 @@ tasks:
           MAVEN_CLI_OPTS: >-
             -Pnative
           QUARKUS_OPTS: >-
-            -Dquarkus.native.container-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=/tmp/native-image-build-output.json","-H:+BuildReport"
+            -Dquarkus.native.additional-build-args="--enable-sbom=cyclonedx","-H:BuildOutputJSONFile=target/native-image-build-output.json","-H:+BuildReport"
   
-  build-app/with-container:
+  build-app/container:
     desc: Build Application and Container Image.
     cmds:
       - task: build-app
         vars:
-          MAVEN_CLI_OPTS: >-
-            -Pnative
-          QUARKUS_OPS: >-
+          QUARKUS_OPTS: >-
             -Dquarkus.container-image.build=true
             -Dquarkus.container-image.tag=latest
             -Dquarkus.container-image.builder=jib
@@ -51,7 +49,7 @@ tasks:
           MAVEN_OPTS: >-
             -Djansi.force=true
             -Dstyle.color=always
-          QUARKUS_OPS: >-
+          QUARKUS_OPTS: >-
             -Dquarkus.container-image.build=true
             -Dquarkus.container-image.tag=latest
             -Dquarkus.container-image.additional-tags=$IMAGE_TAG

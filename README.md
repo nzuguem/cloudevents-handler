@@ -4,7 +4,7 @@
 
 This is an application component that enables the consumption (limited to displaying) and production of CloudEvents, based on the **[HTTP Protocol Binding v1 spec][cloudevents-http-spec]**.
 
-![](docs/images/cloudevents-handler.png)
+![](docs/images/cloudevents-handler.jpeg)
 
 > ℹ️ By default, *cloudevents-handler* sends events in a vacuum (the ***Service*** is ignored). To specify a destination (*ready to receive CloudEvents in HTTP POST*), set the environment variable : `QUARKUS.REST_CLIENT_CLIENT_URL=<URL OF SERVICE>`
 
@@ -50,7 +50,7 @@ We use Java's own source-to-image tool : ***JIB***
 
 ```bash
 ## Build Container Image
-task build-app/with-container
+task build-app/container
 
 ## Run Container Image
 docker run -i --rm -p 8080:8080 ghcr.io/nzuguem/cloudevents-handler
