@@ -47,11 +47,28 @@ jobs:
           fail-build: false
           by-cve: true
           output-format: table
-          vex: true
 
-      - name: Upload Build Report
-        uses: actions/upload-artifact@v4
+      - name: Generate Site Folder
+        run: |
+          mkdir target/site
+          cp target/**/*-build-report.html target/site/index.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: cloudevents-handler-html-build-report
-          path: target/**/*-build-report.html
-          retention-days: 30
+          path: target/site/
+
+  deploy:
+    name: 🚀 Deploy GitHub Pages of Native Build Report
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
