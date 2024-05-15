@@ -63,7 +63,7 @@ tasks:
   dev-mode:
     desc: Run the app in dev mode.
     env:
-      quarkus.rest-client.client.url: http://localhost:8089/client
+      TARGET_SERVICE_URL: http://localhost:8089/client # Wiremock DevServices
     cmd: ./mvnw quarkus:dev
   
   post-event:

@@ -6,7 +6,9 @@ This is an application component that enables the consumption (limited to displa
 
 ![](docs/images/cloudevents-handler.jpeg)
 
-> ℹ️ By default, *cloudevents-handler* sends events in a vacuum (the ***Service*** is ignored). To specify a destination (*ready to receive CloudEvents in HTTP POST*), set the environment variable : `QUARKUS.REST_CLIENT_CLIENT_URL=<URL OF SERVICE>`
+> ℹ️ By default, *cloudevents-handler* sends events in a vacuum (the ***Service*** is ignored). To specify a destination (*ready to receive CloudEvents in HTTP POST*), set the environment variable : `TARGET_SERVICE_URL=<URL OF SERVICE>`
+>
+> In a Knative context with the ***SinkBinding*** object (this component being the subject), you'll need to activate the appropriate Rest client to send cloudEvents to the `K_SINK` destination (the sink part of the SinkBinding object): `TARGET_SERVICE_KNATIVE_SINKBINDING_MODE=true`
 
 ## Prerequisites
 

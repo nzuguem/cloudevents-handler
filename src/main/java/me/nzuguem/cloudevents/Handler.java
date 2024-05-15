@@ -1,15 +1,21 @@
 package me.nzuguem.cloudevents;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
+import java.net.URI;
+import java.util.UUID;
+
 import org.jboss.resteasy.reactive.RestHeader;
+import org.jboss.resteasy.reactive.RestResponse;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.jackson.JsonFormat;
 import io.quarkus.logging.Log;
 import io.smallrye.common.annotation.RunOnVirtualThread;
+import jakarta.enterprise.inject.Instance;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
@@ -32,10 +38,10 @@ public class Handler {
 
     private final Client client;
 
-    public Handler(Validator validator, ObjectMapper mapper, @RestClient Client client) {
+    public Handler(Validator validator, ObjectMapper mapper, Instance<Client> client) {
         this.validator = validator;
         this.mapper = mapper;
-        this.client = client;
+        this.client = client.get();
     }
 
     @POST
@@ -43,17 +49,28 @@ public class Handler {
     @Produces(MediaType.APPLICATION_JSON)
     public Response handle(CloudEvent event, @Context HttpHeaders httpHeaders, @RestHeader String contentType) {
 
-        Log.infof("Revcieve Event ID : %s", event.getId());
+        try {
 
-        this.validateEvent(event);
+            Log.infof("Revcieve Event ID : %s", event.getId());
 
-        this.logHeaders(httpHeaders, contentType);
+            this.validateEvent(event);
 
-        Log.infof("Revcieve Event : %s", event);
+            this.logHeaders(httpHeaders, contentType);
 
-        var eventReply = this.client.send(event.getData(), this.isStructured(contentType));
+            Log.infof("Revcieve Event : %s", event);
 
-        return Response.ok(eventReply).build();
+            var replyEvent = this.toReplyEvent(event);
+
+            this.client.send(replyEvent, this.isStructured(contentType));
+
+            Log.infof("Reply Event : %s", replyEvent);
+
+            return Response.ok(replyEvent).build();
+
+        } catch (Exception e) {
+            // https://quarkus.io/guides/rest#exception-mapping
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
 
     }
 
@@ -67,11 +84,13 @@ public class Handler {
 
             try {
 
+                // https://quarkus.io/guides/rest#exception-mapping
                 throw new BadRequestException(mapper.writeValueAsString(violations));
 
             } catch (JsonProcessingException e) {
 
-                throw new InternalServerErrorException(e);
+                // https://quarkus.io/guides/rest#exception-mapping
+                throw new InternalServerErrorException(e.getMessage(), e);
 
             }
         }
@@ -98,6 +117,29 @@ public class Handler {
     private boolean isStructured(String contentType) {
 
         return JsonFormat.CONTENT_TYPE.equalsIgnoreCase(contentType);
+    }
+
+
+    private CloudEvent toReplyEvent(CloudEvent baseEvent) {
+
+        return CloudEventBuilder.v1()
+            .withId(UUID.randomUUID().toString())
+            .withSource(URI.create("/events/example/reply"))
+            .withSubject("reply")
+            .withDataContentType(MediaType.APPLICATION_JSON)
+            .withType("me.nzuguem.cloudevents.example.reply")
+            .withData(baseEvent.getData())
+            .build();
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<String> handleException(Exception exception) {
+
+        return switch (exception) {
+            case InternalServerErrorException isee -> RestResponse.status(Response.Status.INTERNAL_SERVER_ERROR, isee.getMessage());
+            case BadRequestException bre -> RestResponse.status(Response.Status.BAD_REQUEST, bre.getMessage());
+            default -> RestResponse.status(Response.Status.INTERNAL_SERVER_ERROR, exception.getMessage());
+        };
     }
 
 }
