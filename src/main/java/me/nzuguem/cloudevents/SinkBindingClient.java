@@ -8,7 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @LookupUnlessProperty(name = "target.service.knative.sinkbinding.mode", stringValue = "false")
-public class SinkBingClient extends Client {
+public class SinkBindingClient extends Client {
 
     @Override
     protected String baseUrl() {
