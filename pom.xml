@@ -6,7 +6,7 @@
   <artifactId>cloudevents-handler</artifactId>
   <version>unused</version>
   <properties>
-    <cloudevents.version>3.0.0</cloudevents.version>
+    <cloudevents.version>4.0.0</cloudevents.version>
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
