@@ -41,7 +41,7 @@ jobs:
           output-file: cloudevents-handler-image-sbom-cyclonedx.json
 
       - name: Scan Image from its SBOM
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v4
         with:
           sbom: cloudevents-handler-image-sbom-cyclonedx.json
           fail-build: false
