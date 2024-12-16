@@ -72,7 +72,7 @@
     <dependency>
       <groupId>io.quarkiverse.wiremock</groupId>
       <artifactId>quarkus-wiremock</artifactId>
-      <version>1.4.0</version>
+      <version>1.4.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
