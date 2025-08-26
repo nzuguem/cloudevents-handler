@@ -57,7 +57,7 @@ jobs:
           mkdir target/site
           cp target/**/*-build-report.html target/site/index.html
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: target/site/
 
